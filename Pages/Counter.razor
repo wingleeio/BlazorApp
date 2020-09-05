@@ -1,0 +1,34 @@
+﻿@page "/counter"
+@using BlazorState
+@using Features.Counter
+@inherits BlazorStateComponent
+
+<h1>Counter</h1>
+
+<p>Current count: @count</p>
+
+<div class="form-group">
+    <input class="form-control" @bind=value/>
+</div>
+
+<div class="form-group">
+    <button class="btn btn-primary" @onclick=IncrementCount> + </button>
+    <button class="btn btn-danger" @onclick=ReduceCount> - </button>
+</div>
+
+@code {
+    CounterState CounterState => GetState<CounterState>();
+
+    private int count => CounterState.Count;
+    private int value = 1;
+
+    private void IncrementCount()
+    {
+        Mediator.Send(new CounterState.IncrementCountAction { Amount = value });
+    }
+
+    private void ReduceCount()
+    {
+        Mediator.Send(new CounterState.ReduceCountAction { Amount = value });
+    }
+}

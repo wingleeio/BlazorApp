@@ -1,0 +1,63 @@
+@page "/posts"
+@inject HttpClient Http
+@using BlazorState
+@using Features.Post
+@using Features.User
+@using System.Collections.Generic
+@inherits BlazorStateComponent
+
+<h1>Posts</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if(posts.Count() == 0) {
+    <p><em>Loading...</em></p>
+} else {
+    @foreach (PostDTO post in posts)
+    {   
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="media">
+                    <div class="media-body">
+                        <h5 class="mt-0">
+                            @post.Title
+                        </h5>
+                        <p><small>Written by @GetUserName(post.UserId)</small></p>
+                        <p>@post.Body</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    PostState PostState => GetState<PostState>();
+    UserState UserState => GetState<UserState>();
+
+    IEnumerable<PostDTO> posts => PostState.Posts;
+    IEnumerable<UserDTO> users => UserState.Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PostDTO[] posts = await Http.GetFromJsonAsync<PostDTO[]>("posts");
+        UserDTO[] users = await Http.GetFromJsonAsync<UserDTO[]>("users");
+
+        await Mediator.Send(new PostState.GetPostsAction { Posts = posts });
+        await Mediator.Send(new UserState.GetUsersAction { Users = users});
+    }
+
+    private string GetUserName(int id) 
+    {
+        UserDTO user = users.FirstOrDefault(user => user.Id == id);
+
+        if(user != null) 
+        {
+            return user.Name;
+        } 
+        else 
+        {
+            return "";
+        }
+    }
+}
